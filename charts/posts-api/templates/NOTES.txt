@@ -1,0 +1,21 @@
+posts-api has been deployed.
+
+{{- if .Values.ingress.enabled }}
+Ingress is enabled (class: {{ .Values.ingress.className }}). Once its
+controller has an external address, the app is reachable at:
+  http://{{ .Values.ingress.host | default "<ingress-address>" }}/posts
+{{- else }}
+Ingress is disabled. Reach the app by port-forwarding the Service:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "posts-api.fullname" . }} 8080:{{ .Values.service.port }}
+  curl http://localhost:8080/posts
+{{- end }}
+
+Check rollout status:
+  kubectl rollout status deployment/{{ include "posts-api.fullname" . }} -n {{ .Release.Namespace }}
+
+{{- if not .Values.imagePullSecrets }}
+
+NOTE: image.pullSecrets is empty. If {{ .Values.image.repository }} is a
+private repository, pulls will fail until you create the referenced Secret
+(see the chart README) and set imagePullSecrets accordingly.
+{{- end }}

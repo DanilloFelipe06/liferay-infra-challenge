@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: posts-api-config
+  namespace: posts-api
+data:
+  TYPEORM_CONNECTION: mysql
+  TYPEORM_HOST: mariadb.posts-api.svc.cluster.local
+  TYPEORM_PORT: "3306"
+  # Schema auto-sync is convenient for this sample/demo but is NOT safe for a
+  # real production database (it can silently drop/alter columns). This
+  # repository ships no migrations yet, so it is kept "true" to keep the
+  # sample runnable; a real rollout should generate proper TypeORM
+  # migrations, set this to "false", and run them via a Kubernetes Job
+  # (or an init container) before the Deployment rolls out.
+  TYPEORM_SYNCHRONIZE: "true"
+  TYPEORM_ENTITIES: dist/entity/*.js
+  TYPEORM_MIGRATIONS: dist/migration/*.js
+  TYPEORM_SUBSCRIBERS: dist/subscriber/*.js
+  PORT: "3000"

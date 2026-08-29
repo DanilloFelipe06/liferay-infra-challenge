@@ -1,0 +1,12 @@
+apiVersion: v2
+name: posts-api
+description: TypeORM/Express "posts" sample API, packaged for a highly-available Kubernetes deployment
+type: application
+version: 0.1.0
+appVersion: "0.1.2"
+keywords:
+  - typeorm
+  - express
+  - nodejs
+maintainers:
+  - name: danillo.santos

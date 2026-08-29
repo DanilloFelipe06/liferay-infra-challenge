@@ -1,0 +1,101 @@
+# Single-instance MariaDB for local/demo purposes only.
+#
+# This is intentionally a single-writer StatefulSet with one PVC: MySQL/MariaDB
+# does not gain multi-AZ high availability just by running more replicas of
+# this manifest (that needs real replication topology + failover, e.g.
+# Galera/Group Replication, which is a lot of undifferentiated ops burden).
+# In a real production/global-scale deployment this whole file would be
+# replaced by a managed, multi-AZ database service (e.g. Amazon RDS
+# Multi-AZ/Aurora, Cloud SQL HA, Azure Database for MySQL Flexible Server),
+# and the app would just point TYPEORM_HOST at its endpoint.
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: posts-api
+  labels:
+    app.kubernetes.io/name: mariadb
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: mariadb
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  namespace: posts-api
+  labels:
+    app.kubernetes.io/name: mariadb
+spec:
+  serviceName: mariadb
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mariadb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mariadb
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:10.11
+          ports:
+            - name: mysql
+              containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: TYPEORM_DATABASE
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: TYPEORM_USERNAME
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: TYPEORM_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: MYSQL_ROOT_PASSWORD
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD"]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

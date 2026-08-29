@@ -1,0 +1,89 @@
+# Default values for posts-api.
+
+replicaCount: 3
+
+image:
+  repository: danillofelipe/posts-api-private
+  tag: v0.1.2
+  pullPolicy: IfNotPresent
+
+# Name of a pre-existing `kubernetes.io/dockerconfigjson` Secret used to pull
+# `image.repository` when it is a private registry. Create it with:
+#   kubectl create secret docker-registry regcred \
+#     --namespace <release-namespace> \
+#     --docker-username=<user> --docker-password=<token>
+# Leave as [] if the image repository is public.
+imagePullSecrets:
+  - name: regcred
+
+app:
+  port: 3000
+  # WARNING: TypeORM schema auto-sync. Fine for this sample (which ships no
+  # migrations), unsafe for a real production database — see chart README.
+  synchronize: true
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: traefik
+  # Empty host = catch-all rule matching any Host header.
+  host: ""
+  annotations: {}
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# Spreads replicas across failure domains so that, with 3+ replicas and 3
+# AZs, losing one whole AZ still leaves the app serving traffic.
+topologySpreadConstraints:
+  zoneTopologyKey: topology.kubernetes.io/zone
+  hostTopologyKey: kubernetes.io/hostname
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 9
+  targetCPUUtilizationPercentage: 70
+
+# --- Database -------------------------------------------------------------
+# By default the chart deploys its own single-instance MariaDB (mariadb.*
+# below) — convenient for local/demo use, but NOT how this should run in a
+# real multi-AZ production environment (see chart README). Set
+# database.embedded: false and fill in database.host/port to point at an
+# externally managed database instead (e.g. RDS/Cloud SQL), which is the
+# recommended production setup.
+database:
+  embedded: true
+  host: ""
+  port: 3306
+  name: posts
+  username: posts_app
+  # Name of a pre-existing Secret with keys TYPEORM_USERNAME,
+  # TYPEORM_PASSWORD, TYPEORM_DATABASE (and MYSQL_ROOT_PASSWORD when
+  # database.embedded is true). If empty, the chart generates one Secret
+  # with random credentials on first install and preserves it across
+  # upgrades.
+  existingSecret: ""
+
+mariadb:
+  image: mariadb:10.11
+  storage: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

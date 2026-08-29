@@ -1,0 +1,32 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: posts-cluster
+servers: 1
+agents: 3
+image: rancher/k3s:v1.30.4-k3s1
+ports:
+  - port: 8080:80
+    nodeFilters:
+      - loadbalancer
+  - port: 8443:443
+    nodeFilters:
+      - loadbalancer
+options:
+  k3s:
+    # Traefik and metrics-server both ship by default with k3s: Traefik acts
+    # as the cluster's Ingress controller (reverse proxy in front of the
+    # app), metrics-server backs the HorizontalPodAutoscaler.
+    nodeLabels:
+      # Simulate 3 different cloud availability zones across the 3 agent
+      # (worker) nodes, so pods can be spread across them with
+      # topologySpreadConstraints, matching a real multi-AZ deployment.
+      - label: topology.kubernetes.io/zone=zone-a
+        nodeFilters:
+          - agent:0
+      - label: topology.kubernetes.io/zone=zone-b
+        nodeFilters:
+          - agent:1
+      - label: topology.kubernetes.io/zone=zone-c
+        nodeFilters:
+          - agent:2

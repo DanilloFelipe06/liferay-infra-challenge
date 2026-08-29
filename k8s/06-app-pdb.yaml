@@ -1,0 +1,13 @@
+# Ensures voluntary disruptions (node drains, cluster upgrades) never take
+# down more than one pod at a time, keeping the app available across the
+# remaining AZs during maintenance.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: posts-api
+  namespace: posts-api
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: posts-api
