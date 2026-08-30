@@ -1,0 +1,203 @@
+<mxfile host="app.diagrams.net" agent="claude-code" version="24.7.17" type="device">
+  <diagram name="Posts API - Ciclo CI-CD e Infra" id="posts-api-cicd">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1320" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ============================== TITLE ============================== -->
+        <mxCell id="title" value="Posts API — ciclo de criacao, build automatico, testes e deployment" style="text;html=0;align=left;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#1B1B1B;" vertex="1" parent="1">
+          <mxGeometry x="40" y="0" width="1100" height="32" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== CI BAND ============================== -->
+        <mxCell id="ciBand" value="Integracao continua — GitHub Actions" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#EAF2FB;strokeColor=#B7D3E8;align=left;verticalAlign=top;fontSize=14;fontStyle=1;fontColor=#1B4F72;spacingLeft=14;spacingTop=10;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="1820" height="300" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dev" value="Desenvolvedor(a)&#10;push em src/ ou chart/" style="shape=actor;whiteSpace=wrap;html=0;fillColor=#F5F5F5;strokeColor=#333333;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="80" y="150" width="50" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="repo" value="Repositorio GitHub&#10;(branch main)" style="shape=note;whiteSpace=wrap;html=0;fillColor=#24292F;strokeColor=#000000;size=14;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="300" y="155" width="70" height="54" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actTrig" value="GitHub Actions&#10;workflow disparado" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=0;fillColor=#24292F;strokeColor=#000000;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="540" y="155" width="72" height="54" as="geometry" />
+        </mxCell>
+
+        <mxCell id="testStep" value="Job: test&#10;yarn build . yarn test&#10;helm lint . helm template x2" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=0;fillColor=#2E7D32;strokeColor=#1B5E20;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="780" y="155" width="80" height="54" as="geometry" />
+        </mxCell>
+
+        <mxCell id="buildStep" value="Job: build-and-push&#10;docker buildx build" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=0;fillColor=#1D63ED;strokeColor=#0B3E9C;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="155" width="80" height="54" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dockerHub" value="Docker Hub&#10;image:sha-&lt;commit&gt;" style="shape=cylinder;whiteSpace=wrap;html=0;fillColor=#1D63ED;strokeColor=#0B3E9C;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="140" width="80" height="84" as="geometry" />
+        </mxCell>
+
+        <mxCell id="updateStep" value="Job: update-manifests&#10;bump image.tag&#10;commit [skip ci]" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=0;fillColor=#6A4FB6;strokeColor=#452F80;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="155" width="86" height="54" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== CD BAND ============================== -->
+        <mxCell id="cdBand" value="Entrega continua — Argo CD e cluster Kubernetes" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#EAF7EF;strokeColor=#B7E0C7;align=left;verticalAlign=top;fontSize=14;fontStyle=1;fontColor=#1B5E3A;spacingLeft=14;spacingTop=10;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="1820" height="780" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tf" value="Terraform&#10;provisiona (1x)" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=0;fillColor=#7B42BC;strokeColor=#4E2A7A;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="80" y="440" width="72" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="argocd" value="Argo CD&#10;auto-sync . self-heal . prune" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=0;fillColor=#EF7B4D;strokeColor=#B85327;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="260" y="470" width="80" height="62" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cluster" value="Cluster Kubernetes (k3d) — 3 zonas de disponibilidade" style="rounded=1;whiteSpace=wrap;html=0;dashed=1;fillColor=#FFFFFF;strokeColor=#7FA88F;align=left;verticalAlign=top;fontSize=13;fontStyle=1;fontColor=#2E5E44;spacingLeft=12;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="460" y="420" width="1380" height="680" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ingress" value="Ingress&#10;(Traefik)" style="sketch=0;outlineConnect=0;fontColor=#23292E;fillColor=#326CE5;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=0;fontSize=11;whiteSpace=wrap;shape=mxgraph.kubernetes.icon;prIcon=ing;" vertex="1" parent="1">
+          <mxGeometry x="510" y="480" width="54" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="service" value="Service&#10;posts-api" style="sketch=0;outlineConnect=0;fontColor=#23292E;fillColor=#326CE5;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=0;fontSize=11;whiteSpace=wrap;shape=mxgraph.kubernetes.icon;prIcon=svc;" vertex="1" parent="1">
+          <mxGeometry x="510" y="580" width="54" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="hpa" value="HPA&#10;3-9 replicas . CPU 70%" style="sketch=0;outlineConnect=0;fontColor=#23292E;fillColor=#326CE5;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=0;fontSize=11;whiteSpace=wrap;shape=mxgraph.kubernetes.icon;prIcon=hpa;" vertex="1" parent="1">
+          <mxGeometry x="510" y="680" width="54" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rollout" value="Argo Rollouts&#10;canario 33% -&gt; 66% -&gt; 100%" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=0;fillColor=#3AB6A6;strokeColor=#217A6E;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="498" y="780" width="78" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="spreadNote" value="topologySpreadConstraints: zone = DoNotSchedule . host = ScheduleAnyway&#10;PodDisruptionBudget: maxUnavailable 1" style="shape=note;whiteSpace=wrap;html=0;fillColor=#FFF6D8;strokeColor=#E0C674;align=left;verticalAlign=top;fontSize=11;fontColor=#5C4A1A;spacing=8;size=10;" vertex="1" parent="1">
+          <mxGeometry x="650" y="490" width="830" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="zoneA" value="zone-a" style="rounded=1;whiteSpace=wrap;html=0;dashed=1;fillColor=#F5FBF8;strokeColor=#A9CBBB;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#4C7C67;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="650" y="560" width="250" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="zoneB" value="zone-b" style="rounded=1;whiteSpace=wrap;html=0;dashed=1;fillColor=#F5FBF8;strokeColor=#A9CBBB;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#4C7C67;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="940" y="560" width="250" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="zoneC" value="zone-c" style="rounded=1;whiteSpace=wrap;html=0;dashed=1;fillColor=#F5FBF8;strokeColor=#A9CBBB;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#4C7C67;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="560" width="250" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="podA" value="Pod&#10;posts-api" style="sketch=0;outlineConnect=0;fontColor=#23292E;fillColor=#326CE5;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=0;fontSize=11;whiteSpace=wrap;shape=mxgraph.kubernetes.icon;prIcon=pod;" vertex="1" parent="1">
+          <mxGeometry x="750" y="680" width="50" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="podB" value="Pod&#10;posts-api" style="sketch=0;outlineConnect=0;fontColor=#23292E;fillColor=#326CE5;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=0;fontSize=11;whiteSpace=wrap;shape=mxgraph.kubernetes.icon;prIcon=pod;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="680" width="50" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="podC" value="Pod&#10;posts-api" style="sketch=0;outlineConnect=0;fontColor=#23292E;fillColor=#326CE5;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=0;fontSize=11;whiteSpace=wrap;shape=mxgraph.kubernetes.icon;prIcon=pod;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="680" width="50" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mariadb" value="MariaDB&#10;StatefulSet + PVC 1Gi" style="shape=cylinder;whiteSpace=wrap;html=0;fillColor=#003545;strokeColor=#001E27;fontColor=#23292E;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="680" width="90" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="secrets" value="Secrets fora de banda&#10;(kubectl / Terraform)" style="rounded=1;whiteSpace=wrap;html=0;dashed=1;fillColor=#FFF6D8;strokeColor=#E0C674;align=left;verticalAlign=top;fontSize=11;fontStyle=1;fontColor=#5C4A1A;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="1590" y="460" width="230" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="regcred" value="regcred" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=0;fillColor=#8A8F98;strokeColor=#5C6168;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=10;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="1605" y="510" width="70" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="dbcred" value="db-credentials" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=0;fillColor=#8A8F98;strokeColor=#5C6168;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontSize=10;fontColor=#23292E;" vertex="1" parent="1">
+          <mxGeometry x="1690" y="510" width="110" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== EDGES: CI ============================== -->
+        <mxCell id="e1" value="push" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="dev" target="repo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="on: push -&gt; main" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="repo" target="actTrig">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="actTrig" target="testStep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="testes ok" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="testStep" target="buildStep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="docker build &amp;&amp; push" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="buildStep" target="dockerHub">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="job: update-manifests" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="buildStep" target="updateStep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="commit: bump image.tag&#10;[skip ci]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontStyle=1;fontColor=#B85327;strokeColor=#B85327;strokeWidth=2;endArrow=block;endFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="updateStep" target="repo">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1563" y="100" />
+              <mxPoint x="335" y="100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ============================== EDGES: CD ============================== -->
+        <mxCell id="e8" value="poll / auto-sync" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="repo" target="argocd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="provisiona (1x)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;dashed=1;fontSize=10;fontColor=#7B42BC;strokeColor=#7B42BC;endArrow=block;endFill=1;" edge="1" parent="1" source="tf" target="argocd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="provisiona (1x): cluster + CRDs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;dashed=1;fontSize=10;fontColor=#7B42BC;strokeColor=#7B42BC;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.05;entryDx=0;entryDy=0;" edge="1" parent="1" source="tf" target="cluster">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="provisiona (1x): bootstrap" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;dashed=1;fontSize=10;fontColor=#7B42BC;strokeColor=#7B42BC;endArrow=block;endFill=1;" edge="1" parent="1" source="tf" target="secrets">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="116" y="420" />
+              <mxPoint x="1705" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" value="sync: aplica chart&#10;(Rollout, Service, HPA, Ingress...)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="argocd" target="rollout">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="image pull (regcred)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dockerHub" target="cluster">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" value="roteia trafego externo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="ingress" target="service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" value="observa CPU . ajusta replicas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;dashed=1;fontSize=10;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="hpa" target="rollout">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" value="controla pods atras do" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=11;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="rollout" target="service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" value="round-robin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=10;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="service" target="podA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=10;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="service" target="podB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=10;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="service" target="podC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" value="consulta (TypeORM)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=10;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="podA" target="mariadb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=10;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="podB" target="mariadb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;fontSize=10;fontColor=#3A3F44;strokeColor=#6B7680;endArrow=block;endFill=1;" edge="1" parent="1" source="podC" target="mariadb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e23" value="regcred + db-credentials&#10;nunca gerados pelo Helm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;dashed=1;fontSize=10;fontColor=#5C4A1A;strokeColor=#B8973A;endArrow=block;endFill=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="secrets" target="mariadb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
