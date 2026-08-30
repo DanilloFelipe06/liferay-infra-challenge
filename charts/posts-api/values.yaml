@@ -4,7 +4,7 @@ replicaCount: 3
 
 image:
   repository: danillofelipe/posts-api-private
-  tag: sha-3a7f32c
+  tag: sha-45b52cc
   pullPolicy: IfNotPresent
 
 # Name of a pre-existing `kubernetes.io/dockerconfigjson` Secret used to pull
