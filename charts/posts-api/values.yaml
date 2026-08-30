@@ -104,6 +104,20 @@ database:
   #     --from-literal=TYPEORM_DATABASE=posts \
   #     --from-literal=TYPEORM_PASSWORD=<random> \
   #     --from-literal=MYSQL_ROOT_PASSWORD=<random>
+  #
+  # Gotcha when migrating an existing release to this: if a Secret with
+  # this same name was previously generated (and applied) by this Helm
+  # chart through Argo CD, it still carries Argo CD's tracking
+  # label/annotation. `kubectl apply`/`create --dry-run=client -o yaml |
+  # apply` on top of it can leave that tracking metadata in place even
+  # though the object's contents changed — and since it then disappears
+  # from the chart's rendered output (this guard turns the template off),
+  # Argo CD's automated prune deletes it on the next sync, right out from
+  # under you. Use plain `kubectl create secret` (or delete the old
+  # object first) so the replacement starts with no Argo CD metadata at
+  # all — `kubectl get secret posts-api-db-credentials -o
+  # jsonpath='{.metadata.labels}{.metadata.annotations}'` should print
+  # nothing.
   existingSecret: "posts-api-db-credentials"
 
 mariadb:
