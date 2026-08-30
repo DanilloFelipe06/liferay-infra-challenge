@@ -1,0 +1,42 @@
+{{- if .Values.argoRollouts.enabled }}
+# Requires the Argo Rollouts controller + CRDs installed in the cluster
+# (kubectl argo-rollouts / argoproj.io/v1alpha1). Replaces the plain
+# Deployment with progressive delivery: new versions ramp up gradually
+# behind the *same* Service, pausing for observation between steps, and can
+# be aborted/rolled back mid-rollout instead of an all-or-nothing rolling
+# update.
+#
+# No service-mesh / Traefik weighted-routing plugin is configured here, so
+# this uses Argo Rollouts' basic canary (no `trafficRouting:` block): weight
+# is approximated purely by how many canary vs stable pods exist behind the
+# Service (see chart README for the production-grade alternative).
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "posts-api.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "posts-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      {{- include "posts-api.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: app
+  template:
+    {{- include "posts-api.podTemplate" . | nindent 4 }}
+  strategy:
+    canary:
+      # Traffic all flows through the single Service (templates/service.yaml);
+      # Argo Rollouts controls the stable/canary ReplicaSet split.
+      steps:
+        {{- range .Values.argoRollouts.canary.steps }}
+        - setWeight: {{ .setWeight }}
+        {{- if .pauseSeconds }}
+        - pause: {duration: {{ .pauseSeconds }}s}
+        {{- else }}
+        - pause: {}
+        {{- end }}
+        {{- end }}
+{{- end }}

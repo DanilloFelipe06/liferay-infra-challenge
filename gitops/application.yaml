@@ -1,0 +1,42 @@
+# Argo CD Application: this repo (and specifically charts/posts-api) is the
+# single source of truth. Once applied, Argo CD continuously reconciles the
+# `posts-api-gitops` namespace to match it — no more `helm upgrade`/`kubectl
+# apply` by hand; the deploy mechanism is "push to git".
+#
+# Bootstrap (one-time, not part of the GitOps loop itself):
+#   kubectl create namespace posts-api-gitops
+#   kubectl create secret docker-registry regcred \
+#     --namespace posts-api-gitops \
+#     --docker-username=<user> --docker-password=<token>
+#   kubectl apply -f gitops/application.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: posts-api
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/DanilloFelipe06/liferay-infra-challenge.git
+    targetRevision: main
+    path: charts/posts-api
+    helm:
+      valuesObject:
+        argoRollouts: { enabled: true }
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: posts-api-gitops
+  syncPolicy:
+    automated:
+      prune: true      # remove resources deleted from git
+      selfHeal: true    # revert manual/out-of-band cluster drift
+    syncOptions:
+      - CreateNamespace=false   # namespace is created explicitly (holds the
+                                 # pre-existing regcred Secret) before this
+                                 # Application is applied
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m

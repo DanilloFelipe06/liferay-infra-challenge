@@ -51,6 +51,21 @@ podDisruptionBudget:
   enabled: true
   maxUnavailable: 1
 
+# Progressive delivery via Argo Rollouts instead of a plain Deployment.
+# Requires the Argo Rollouts controller/CRDs in the cluster (see
+# gitops/argo-rollouts-install.md). Off by default so the chart stays
+# installable with nothing but stock Kubernetes.
+argoRollouts:
+  enabled: false
+  canary:
+    steps:
+      - setWeight: 33
+        pauseSeconds: 30
+      - setWeight: 66
+        pauseSeconds: 30
+      # Final implicit step to 100% happens automatically once all steps
+      # above complete.
+
 autoscaling:
   enabled: true
   minReplicas: 3
