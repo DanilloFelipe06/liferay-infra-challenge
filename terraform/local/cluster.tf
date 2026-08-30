@@ -9,7 +9,8 @@ resource "null_resource" "k3d_cluster" {
   }
 
   provisioner "local-exec" {
-    command = <<-EOT
+    interpreter = ["/bin/bash", "-c"]
+    command     = <<-EOT
       set -euo pipefail
 
       if ! k3d cluster get "${var.cluster_name}" >/dev/null 2>&1; then

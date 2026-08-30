@@ -65,15 +65,18 @@ While not all of these need to be implemented, the more of them that are complet
 
 ## Deployment environments in the local cluster
 
-This repo was iterated on in stages, and the local k3d cluster (`k3d-posts-cluster`) currently
-has two namespaces running the same workload from two different stages. They are **not** meant
-to coexist in a real setup — this is just how the local dev cluster ended up after building the
-project incrementally:
+This repo was iterated on in stages. Earlier on, the local k3d cluster briefly had two namespaces
+running the same workload side by side — `posts-api` (legacy: manual `kubectl apply -f` of the
+raw [k8s/](k8s/) manifests, plain Deployment, no Helm, no Rollouts) and `posts-api-gitops` (the
+canonical one, below). That legacy namespace no longer exists — the cluster was later rebuilt from
+scratch via [terraform/local](terraform/local), which only stands up the canonical path.
 
-| Namespace | How it's deployed | Manifests | Status |
+| Namespace | How it's deployed | Manifests | Notes |
 | --- | --- | --- | --- |
-| `posts-api` | manual `kubectl apply -f k8s/` | [k8s/](k8s/) raw manifests | Legacy — first pass (plain Deployment, no Helm, no Rollouts). Kept around from that stage, superseded by the rows below. |
-| `posts-api-gitops` | ArgoCD, auto-synced from this repo's `main` | [charts/posts-api](charts/posts-api) Helm chart, applied via [gitops/application.yaml](gitops/application.yaml) | **Canonical.** Deploys an Argo Rollouts `Rollout` (canary) instead of a `Deployment`; ArgoCD prunes/self-heals any drift from what's committed. |
+| `posts-api-gitops` | Provisioned by [terraform/local](terraform/local) (cluster, Argo CD, Argo Rollouts, bootstrap Secrets), then continuously reconciled by ArgoCD from this repo's `main` | [charts/posts-api](charts/posts-api) Helm chart, applied via [gitops/application.yaml](gitops/application.yaml) | Deploys an Argo Rollouts `Rollout` (canary) instead of a `Deployment`; ArgoCD prunes/self-heals any drift from what's committed. |
+
+The `k8s/` raw manifests are kept in the repo as a record of the first pass (see the change
+history), but aren't applied anywhere anymore.
 
 `posts-api-gitops` is the environment that reflects the current state of this repository (source
 of truth = git, per the comment in `gitops/application.yaml`). The plain `posts-api` namespace
