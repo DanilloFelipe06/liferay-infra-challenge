@@ -9,9 +9,17 @@
         "experimentalDecorators": true,
         "sourceMap": true,
         "outDir": "dist",
-        "rootDir": "src"
+        "rootDir": "src",
+        // Without this, TypeScript auto-includes *every* @types/* package
+        // as ambient global types — including dev-only ones like
+        // @types/jest and @types/supertest, whose own transitive .d.ts
+        // dependencies (superagent, buffer, ...) assume a newer `lib`
+        // than this build targets. Test compilation gets its own
+        // tsconfig.test.json with those added back.
+        "types": ["node"]
     },
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "test"
     ]
 }

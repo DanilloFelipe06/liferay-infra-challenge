@@ -1,7 +1,7 @@
 name: Build and deploy
 
 # Pipeline shape:
-#   test              -> always: install, typecheck/build, Dockerfile builds, Helm chart lints
+#   test              -> always: install, typecheck/build, run the Jest suite, Dockerfile builds, Helm chart lints
 #   build-and-push     -> only on push to main: build the image once and push it to Docker Hub,
 #                          tagged with the immutable commit SHA (plus a floating `latest`)
 #   update-manifests    -> only after a successful push: bump charts/posts-api/values.yaml's
@@ -17,9 +17,12 @@ on:
     branches: [main]
     paths:
       - "src/**"
+      - "test/**"
       - "package.json"
       - "yarn.lock"
       - "tsconfig.json"
+      - "tsconfig.test.json"
+      - "jest.config.js"
       - "Dockerfile"
       - ".dockerignore"
       - "charts/**"
@@ -52,6 +55,9 @@ jobs:
 
       - name: Type-check / compile
         run: yarn build
+
+      - name: Run tests
+        run: yarn test
 
       - uses: azure/setup-helm@v4
       - name: Lint Helm chart

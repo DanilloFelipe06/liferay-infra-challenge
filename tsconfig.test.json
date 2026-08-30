@@ -1,0 +1,13 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        // Broader than the production build on purpose: test-only
+        // packages (jest, supertest, sqlite3's driver) need ambient
+        // globals and language features tsconfig.json deliberately
+        // excludes to keep the shipped image's build minimal — see the
+        // comment on tsconfig.json's "types".
+        "types": ["node", "jest"],
+        "lib": ["es2020"],
+        "rootDir": "."
+    }
+}
