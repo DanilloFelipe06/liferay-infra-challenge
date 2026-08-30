@@ -1,0 +1,5 @@
+# Copy to terraform.tfvars (gitignored) and fill in, or pass as
+# -var/TF_VAR_* instead of committing credentials to a file at all.
+
+dockerhub_username = "your-dockerhub-username"
+dockerhub_password = "dckr_pat_..." # Docker Hub access token, Read-only is enough

@@ -79,3 +79,17 @@ project incrementally:
 of truth = git, per the comment in `gitops/application.yaml`). The plain `posts-api` namespace
 from the raw-manifests stage is left running only as a leftover from earlier local testing; delete
 it with `kubectl delete namespace posts-api` once it's no longer needed for comparison.
+
+## Infrastructure as code (Terraform)
+
+[terraform/](terraform/) provisions the local k3d cluster, Argo CD, Argo Rollouts, and the
+posts-api bootstrap from nothing — see [terraform/local](terraform/local/README.md) to run it.
+[terraform/aws](terraform/aws/README.md) is a not-applied stub for the optional "remote
+environment" goal.
+
+## CI/CD
+
+[.github/workflows/build-and-deploy.yml](.github/workflows/build-and-deploy.yml) builds and lints
+on every push/PR; on `main` it also builds/pushes the image (tagged with the immutable commit SHA)
+and commits that tag into `charts/posts-api/values.yaml`, which is what actually triggers Argo CD's
+canary Rollout — CI never talks to the cluster directly.
