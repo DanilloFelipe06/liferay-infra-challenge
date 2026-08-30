@@ -8,7 +8,17 @@
 #   kubectl create secret docker-registry regcred \
 #     --namespace posts-api-gitops \
 #     --docker-username=<user> --docker-password=<token>
+#   kubectl create secret generic posts-api-db-credentials \
+#     --namespace posts-api-gitops \
+#     --from-literal=TYPEORM_USERNAME=posts_app \
+#     --from-literal=TYPEORM_DATABASE=posts \
+#     --from-literal=TYPEORM_PASSWORD=<random> \
+#     --from-literal=MYSQL_ROOT_PASSWORD=<random>
 #   kubectl apply -f gitops/application.yaml
+#
+# Both Secrets above are intentionally created out-of-band and never
+# templated by Helm/Argo CD (see charts/posts-api/values.yaml's
+# database.existingSecret comment for why, in the DB credentials' case).
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

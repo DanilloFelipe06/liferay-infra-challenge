@@ -89,8 +89,22 @@ database:
   # TYPEORM_PASSWORD, TYPEORM_DATABASE (and MYSQL_ROOT_PASSWORD when
   # database.embedded is true). If empty, the chart generates one Secret
   # with random credentials on first install and preserves it across
-  # upgrades.
-  existingSecret: ""
+  # upgrades using Helm's `lookup` function.
+  #
+  # Set under GitOps (Argo CD): Argo CD's Helm rendering does not reliably
+  # honor `lookup` across syncs, so a plain "generate on first install"
+  # Secret can silently get a brand new random password on a later sync
+  # while the already-provisioned MariaDB user keeps the old one — the app
+  # then fails to connect. To avoid that class of bug, this Secret is
+  # created out-of-band (same pattern as `imagePullSecrets` / regcred) and
+  # referenced here by name; Helm/Argo CD never generate or touch it.
+  #   kubectl create secret generic posts-api-db-credentials \
+  #     --namespace <release-namespace> \
+  #     --from-literal=TYPEORM_USERNAME=posts_app \
+  #     --from-literal=TYPEORM_DATABASE=posts \
+  #     --from-literal=TYPEORM_PASSWORD=<random> \
+  #     --from-literal=MYSQL_ROOT_PASSWORD=<random>
+  existingSecret: "posts-api-db-credentials"
 
 mariadb:
   image: mariadb:10.11
