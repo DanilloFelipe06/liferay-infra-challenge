@@ -62,3 +62,20 @@ While not all of these need to be implemented, the more of them that are complet
 3. run `yarn typeorm migration:run`
 4. open `http://localhost:3000/posts` and see an empty list
 5. test with `curl`, `postman` or similar tools
+
+## Deployment environments in the local cluster
+
+This repo was iterated on in stages, and the local k3d cluster (`k3d-posts-cluster`) currently
+has two namespaces running the same workload from two different stages. They are **not** meant
+to coexist in a real setup — this is just how the local dev cluster ended up after building the
+project incrementally:
+
+| Namespace | How it's deployed | Manifests | Status |
+| --- | --- | --- | --- |
+| `posts-api` | manual `kubectl apply -f k8s/` | [k8s/](k8s/) raw manifests | Legacy — first pass (plain Deployment, no Helm, no Rollouts). Kept around from that stage, superseded by the rows below. |
+| `posts-api-gitops` | ArgoCD, auto-synced from this repo's `main` | [charts/posts-api](charts/posts-api) Helm chart, applied via [gitops/application.yaml](gitops/application.yaml) | **Canonical.** Deploys an Argo Rollouts `Rollout` (canary) instead of a `Deployment`; ArgoCD prunes/self-heals any drift from what's committed. |
+
+`posts-api-gitops` is the environment that reflects the current state of this repository (source
+of truth = git, per the comment in `gitops/application.yaml`). The plain `posts-api` namespace
+from the raw-manifests stage is left running only as a leftover from earlier local testing; delete
+it with `kubectl delete namespace posts-api` once it's no longer needed for comparison.

@@ -1,0 +1,135 @@
+name: Build and deploy
+
+# Pipeline shape:
+#   test              -> always: install, typecheck/build, Dockerfile builds, Helm chart lints
+#   build-and-push     -> only on push to main: build the image once and push it to Docker Hub,
+#                          tagged with the immutable commit SHA (plus a floating `latest`)
+#   update-manifests    -> only after a successful push: bump charts/posts-api/values.yaml's
+#                          image.tag to that SHA and commit it back to main.
+#
+# That last commit is what actually deploys anything: Argo CD watches this repo
+# (see gitops/application.yaml) and reconciles posts-api-gitops to whatever
+# charts/posts-api says, so pushing the new tag is what triggers the canary Rollout.
+# CI never talks to the cluster directly.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "package.json"
+      - "yarn.lock"
+      - "tsconfig.json"
+      - "Dockerfile"
+      - ".dockerignore"
+      - "charts/**"
+      - ".github/workflows/build-and-deploy.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  IMAGE: danillofelipe/posts-api-private
+
+jobs:
+  test:
+    name: Build & lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --network-timeout 600000
+
+      - name: Type-check / compile
+        run: yarn build
+
+      - uses: azure/setup-helm@v4
+      - name: Lint Helm chart
+        run: helm lint charts/posts-api
+
+      - name: Validate chart renders (Deployment mode)
+        run: helm template posts-api charts/posts-api >/dev/null
+
+      - name: Validate chart renders (Argo Rollouts mode)
+        run: helm template posts-api charts/posts-api --set argoRollouts.enabled=true >/dev/null
+
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-and-push:
+    name: Build & push image
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: tag
+        run: echo "value=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.tag.outputs.value }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  update-manifests:
+    name: Bump image tag in Helm values (GitOps)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Bump charts/posts-api/values.yaml image.tag
+        run: |
+          set -euo pipefail
+          NEW_TAG="${{ needs.build-and-push.outputs.tag }}"
+          sed -i "s/^  tag: .*/  tag: ${NEW_TAG}/" charts/posts-api/values.yaml
+          grep -q "tag: ${NEW_TAG}" charts/posts-api/values.yaml
+
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "values.yaml already up to date, nothing to commit"
+            exit 0
+          fi
+          git add charts/posts-api/values.yaml
+          git commit -m "chore(release): deploy image ${{ needs.build-and-push.outputs.tag }} [skip ci]"
+          git push origin HEAD:main
